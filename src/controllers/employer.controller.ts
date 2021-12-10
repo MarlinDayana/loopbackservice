@@ -7,24 +7,35 @@ import {
   Where,
 } from '@loopback/repository';
 import {
-  post,
-  param,
+  del,
   get,
   getModelSchemaRef,
+  param,
   patch,
+  post,
   put,
-  del,
   requestBody,
   response,
 } from '@loopback/rest';
 import {Employer} from '../models';
 import {EmployerRepository} from '../repositories';
+import {NotificacionService} from '../services';
 
 export class EmployerController {
   constructor(
     @repository(EmployerRepository)
-    public employerRepository : EmployerRepository,
+    public employerRepository: EmployerRepository,
   ) {}
+  @get('/employers/prueba-sms')
+  @response(200, {
+    description: 'Employer model instance',
+    content: {'application/json': {schema: getModelSchemaRef(Employer)}},
+  })
+  enviarsms() {
+    const notificationService = new NotificacionService();
+    notificationService.EnviarSMS();
+    return {success: true};
+  }
 
   @post('/employers')
   @response(200, {
@@ -52,9 +63,7 @@ export class EmployerController {
     description: 'Employer model count',
     content: {'application/json': {schema: CountSchema}},
   })
-  async count(
-    @param.where(Employer) where?: Where<Employer>,
-  ): Promise<Count> {
+  async count(@param.where(Employer) where?: Where<Employer>): Promise<Count> {
     return this.employerRepository.count(where);
   }
 
@@ -106,7 +115,8 @@ export class EmployerController {
   })
   async findById(
     @param.path.string('id') id: string,
-    @param.filter(Employer, {exclude: 'where'}) filter?: FilterExcludingWhere<Employer>
+    @param.filter(Employer, {exclude: 'where'})
+    filter?: FilterExcludingWhere<Employer>,
   ): Promise<Employer> {
     return this.employerRepository.findById(id, filter);
   }
